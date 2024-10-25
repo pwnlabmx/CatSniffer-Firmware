@@ -1,3 +1,4 @@
+#include "SerialPassthroughwithboot.h"
 #include <base64.hpp>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +30,27 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData);
 
 
 void setup(){
-Serial.begin(9600);
+Serial.begin(921600);
+Serial.begin(921600);
+
 while (!Serial) ;
+
+pinMode(Pin_Button, INPUT_PULLUP);
+pinMode(Pin_Boot, INPUT_PULLUP);
+pinMode(Pin_Reset, OUTPUT);
+pinMode(Pin_Reset_Viewer, INPUT);
+digitalWrite(Pin_Reset, HIGH);
+  
+pinMode(LED1,OUTPUT);
+pinMode(LED2,OUTPUT);
+pinMode(LED3,OUTPUT);
+pinMode(CTF1, OUTPUT);
+pinMode(CTF2, OUTPUT);
+pinMode(CTF3, OUTPUT);
+
+  //Make all cJTAG pins an input 
+  for(int i=11;i<15;i++){
+    pinMode(i,INPUT);
 
 // For Testing
 Serial.println("Advertisement Data is:");
@@ -163,7 +183,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
       Serial.print("\n");
     //
     
-    /*
+    
     unsigned char msg[cmdLen+1];// Prepare a byte array to hold the encoded message
     unsigned int msgLen = encode_base64(cmd,cmdLen,msg); //Create a variable to hold the length of the msg and encode the msg
 
@@ -182,12 +202,13 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     encoded_msg[encoded_length] = '\r';
     encoded_msg[encoded_length + 1] = '\n';
     encoded_length += 2;
-    */
+    
 
-    char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
-     int encodedMsgLength = strlen(encodedMsg);
+    //char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
+     //int encodedMsgLength = strlen(encodedMsg);
+     
     // Write the encoded message to serial
-    //Serial1.write(encodedMsg, encodedMsgLength);
+    Serial1.write(encodedMsg, encodedMsgLength);
     
     
 }
