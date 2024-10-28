@@ -26,7 +26,7 @@ The CC1352P can be programmed via Serial using the [tool cc2538](https://github.
 
 v3.x has as a main microcontroller one RP2040, from Raspberry Pi, allowing the communication between CC1352 and the USB serial, as well as the SPI to control the SX1262.
 
-The RP2040 can be programmed directly via USB with the [Arduino Mbed RP2040 Core](https://github.com/arduino/ArduinoCore-mbed), it is important to acknolage one [bug inside the Arduino Core for the RP2040](https://github.com/arduino/ArduinoCore-mbed/issues/532), and its mandatory to change one line of code inside the core.
+The RP2040 can be programmed directly via USB with the [Arduino Mbed RP2040 Core](https://github.com/arduino/ArduinoCore-mbed), it is important to acknowledge one [bug inside the Arduino Core for the RP2040](https://github.com/arduino/ArduinoCore-mbed/issues/532), and its mandatory to change one line of code inside the core.
 
 The CC1352P can be programmed via Serial using the [tool cc2538](https://github.com/ElectronicCats/CatSniffer-Tools/tree/main/cc2538-bsl) with the specific hex file you want to flash, if you flash in a bad way the CC1352, it may get stuck, in this version we included a JTAG connection to erase all the flash, to enable the serial bootloader again.
 
