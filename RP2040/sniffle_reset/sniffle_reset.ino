@@ -7,7 +7,10 @@ unsigned long baud = 2000000;
   byte firmware_v_command1[] = {'A', 'R', 'h', 'A', '\r', '\n'};
   byte firmware_v_command2[] = {'A', 'S', 'Q', '=', '\r', '\n'};
 
+
 void setup() {
+
+  /*
   pinMode(Pin_Button, INPUT_PULLUP);
   pinMode(Pin_Boot, INPUT_PULLUP);
   pinMode(Pin_Reset, OUTPUT);
@@ -25,13 +28,13 @@ void setup() {
   for(int i=11;i<15;i++){
     pinMode(i,INPUT);
   }
-
+*/
   Serial.begin(baud);
   Serial1.begin(baud);
 
 
 
-
+/*
   // Outer loop to repeat the command 5 times
   for (int j = 0; j < 5; j++) {
     // Inner loop to send each byte of the command
@@ -43,24 +46,61 @@ void setup() {
     for (int i = 0; i < sizeof(sync_command); i++) {
     Serial1.write(firmware_v_command1[i]);
   }
+*/
+while(!Serial);
+
+/*
       for (int i = 0; i < sizeof(sync_command); i++) {
     Serial1.write(firmware_v_command1[i]);
+    Serial.write(firmware_v_command1[i]);
   }
 
-    for (int i = 0; i < sizeof(firmware_v_command1); i++) {
-    Serial1.write(firmware_v_command1[i]);
-  }
-
-  listenForSerial1(500); 
-
-
-
-    for (int i = 0; i < sizeof(firmware_v_command2); i++) {
-    Serial1.write(firmware_v_command1[i]);
-  }
-
- listenForSerial1(500); 
   
+    for (int i = 0; i < sizeof(firmware_v_command2); i++) {
+    Serial1.write(firmware_v_command2[i]);
+    Serial.write(firmware_v_command2[i]);
+  }
+
+*/
+
+Serial1.print("ARhA\r\n");
+Serial.print("ARhA\r\n");
+
+Serial1.print("BBAl1r6JiqBVVVUA\r\n");
+Serial.print("BBAl1r6JiqBVVVUA\r\n");
+
+Serial1.print("ARBE\r\n");
+Serial.print("ARBE\r\n");
+
+Serial1.print("ARUB\r\n");
+Serial.print("ARUB\r\n");
+
+Serial1.print("ARKA\r\n");
+Serial.print("ARKA\r\n");
+
+Serial1.print("ARM=\r\n");
+Serial.print("ARM=\r\n");
+
+Serial1.print("ARYA\r\n");
+Serial.print("ARYA\r\n");
+
+Serial1.print("AxsBAqpN56zu\r\n");
+Serial.print("AxsBAqpN56zu\r\n");
+
+Serial1.print("Ah3IAA==\r\n");
+Serial.print("Ah3IAA==\r\n");
+
+Serial1.print("AScF\r\n");
+Serial.print("AScF\r\n");
+
+Serial1.print("ASE=\r\n");
+Serial.print("ASE=\r\n");
+
+Serial1.print("Ahi6MPri\r\n");
+Serial.print("Ahi6MPri\r\n");
+
+listenForSerial1(1000); 
+
 }
 
 
@@ -68,23 +108,6 @@ void setup() {
 void loop() {
   
 
-  /*
-    for (int i = 0; i < sizeof(firmware_v_command1); i++) {
-    Serial.write(firmware_v_command1[i]);
-  }
-
-  for (int i = 0; i < sizeof(firmware_v_command2); i++) {
-    Serial.write(firmware_v_command2[i]);
-  }
-  
-  
-  if (Serial1.available()) {     // If anything comes in Serial1 (pins 0 & 1)
-    Serial.write(Serial1.read());   // read it and send it out Serial (USB)
-    delay(10);
-  }
-
-  */
-  
 
 }
 
@@ -98,23 +121,3 @@ void listenForSerial1(unsigned long duration) {
   }
 }
 
-/*
-C:\Users\suppo\OneDrive\Documentos\GitHub\Sniffle\python_cli>python reset.py -s COM90
-b'ARhA\r\n'
-Sending reset commands...
-b'ARc=\r\n'
-b'ARc=\r\n'
-b'ARc=\r\n'
-b'ARc=\r\n'
-b'ARc=\r\n'
-Trying a mark and flush to get things flowing...
-b'AhhxZeNv\r\n'
-Reset success.
-*/
-
-/*
-C:\Users\suppo\OneDrive\Documentos\GitHub\Sniffle\python_cli>python3 version_check.py -s COM90
-b'ARhA\r\n'
-b'ASQ=\r\n'
-Timeout probing firmware version
-*/

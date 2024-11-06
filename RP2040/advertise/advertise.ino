@@ -15,14 +15,20 @@ uint8_t advData[] = {
 };
 uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
+//advData:  b"\x02\x01\x1a\x02\n\x0c\x11\x07d\x14\xea\xd7/\xdb\xa3\xb0YH\x16\xd40\x82\xcb'\x05\x03\n\x18\r\x18"  Print de python
+//advData:      2   1   1A   2  A  C  11   7   64  14  EA   D7  2F  DB   A3   B0   59  48  16  D4  30 82 CB 27 5 3 A 18 D 18
+
 
 //Define the scan response data, hardcoded for now 
 uint8_t devName[] = "CatSniffer";
+//char scanRspData:  "\t\tNCC Goat";
 uint8_t scanRspData[] = {
   0x0A, 0x09, 0x43, 0x61, 0x74, 0x53, 0x6E, 0x69,
   0x66, 0x66, 0x65, 0x72
 };
 uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
+
+//paddedScnData:  [10, 9, 9, 78, 67, 67, 32, 71, 111, 97, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 //Function definitions
 uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode);
@@ -75,11 +81,10 @@ for(int i = 0; i < scanRspDataLen; i++)
 uint8_t error=cmdAdvertise(advData,scanRspData,0);
 
 }
-
-
+}
 
 void loop() {
-  Serial1.write("FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n");
+  //Serial1.write("FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n");
 }
 
 
@@ -198,17 +203,17 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     //
 
     
-     Append "\r\n" to encoded_msg
-    encoded_msg[encoded_length] = '\r';
-    encoded_msg[encoded_length + 1] = '\n';
-    encoded_length += 2;
+     //Append "\r\n" to encoded_msg
+    //encoded_msg[encoded_length] = '\r';
+    //encoded_msg[encoded_length + 1] = '\n';
+    //encoded_length += 2;
     
 
     //char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
      //int encodedMsgLength = strlen(encodedMsg);
      
     // Write the encoded message to serial
-    Serial1.write(encodedMsg, encodedMsgLength);
+    //Serial1.write(encodedMsg, encodedMsgLength);
     
     
 }
