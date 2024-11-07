@@ -154,24 +154,28 @@ void changeBand(catsniffer_t *cs, unsigned long newBand){
   if(newBand==cs->band)
     return;
   switch(newBand){
-    case GIG:
+    case GIG:   //2.4Ghz CC1352
       digitalWrite(CTF1,  LOW);
       digitalWrite(CTF2,  HIGH);
       digitalWrite(CTF3,  LOW);
     break;
 
-    case SUBGIG_1: //Check pin config
+    case SUBGIG_1: //Sub-ghz CC1352
       digitalWrite(CTF1,  LOW);
-      digitalWrite(CTF2,  HIGH);
+      digitalWrite(CTF2,  LOW);
+      digitalWrite(CTF3,  HIGH);
+    break;
+
+    case SUBGIG_2: //LoRa
+      digitalWrite(CTF1,  HIGH);
+      digitalWrite(CTF2,  LOW);
       digitalWrite(CTF3,  LOW);
     break;
 
-    case SUBGIG_2: //Check pin config
-      digitalWrite(CTF1,  LOW);
-      digitalWrite(CTF2,  HIGH);
-      digitalWrite(CTF3,  LOW);
-    break;    
+    default:
+    break;
     }
+
   return;
   }
 
@@ -215,6 +219,28 @@ void processCommand(String *cmd){
   if("exit" == *cmd){
     changeMode(&catsniffer, PASSTRHOUGH);
     Serial.println("PASSTRHOUGH");
+    digitalWrite(LED1, 0);
+    digitalWrite(LED2, 0);
+    digitalWrite(LED3, 0);
+  }
+    //exit boot mode
+  if("band1" == *cmd){
+    changeBand(&catsniffer, GIG);
+    Serial.println("2.4Ghz Band");
+    digitalWrite(LED1, 0);
+    digitalWrite(LED2, 0);
+    digitalWrite(LED3, 0);
+  }
+  if("band2" == *cmd){
+    changeBand(&catsniffer, SUBGIG_1);
+    Serial.println("SUB-Ghz Band");
+    digitalWrite(LED1, 0);
+    digitalWrite(LED2, 0);
+    digitalWrite(LED3, 0);
+  }
+  if("band3" == *cmd){
+    changeBand(&catsniffer, SUBGIG_2);
+    Serial.println("LoRa Band");
     digitalWrite(LED1, 0);
     digitalWrite(LED2, 0);
     digitalWrite(LED3, 0);
