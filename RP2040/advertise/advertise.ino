@@ -20,11 +20,11 @@ uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
 
 //Define the scan response data, hardcoded for now 
-uint8_t devName[] = "CatSniffer";
+uint8_t devName[] = "NCC Goat";
 //char scanRspData:  "\t\tNCC Goat";
 uint8_t scanRspData[] = {
-  0x0A, 0x09, 0x43, 0x61, 0x74, 0x53, 0x6E, 0x69,
-  0x66, 0x66, 0x65, 0x72
+  0x09, 0x09, 0x4e, 0x43, 0x43, 0x20, 0x47, 0x6f,
+  0x61, 0x74
 };
 uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
 
@@ -71,7 +71,7 @@ Serial.print("\n");
 Serial.println("Scan Response Data is:");
 for(int i = 0; i < scanRspDataLen; i++)
 {
-  Serial.print(scanRspData[i]); //Add , HEX again if needed
+  Serial.print(scanRspData[i],HEX); //Add , HEX again if needed
   Serial.print(" ");
 }
   Serial.print("\n");
@@ -102,20 +102,34 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
         return -3;// Error: Mode must be 0 (connectable), 2 (non-connectable), or 3 (scannable)
     }
     
-    uint8_t paddedAdvData[31];
-    uint8_t paddedScanRspData[31];
+    Serial.println("advDataLen: ");
+    Serial.println(advDataLen);
+    Serial.println("advDataLen: ");
+    Serial.println(scanRspDataLen);
 
-    paddedAdvData[0] = (uint8_t)advDataLen;
-    memcpy(paddedAdvData, (const void*)advData, advDataLen);
-    memset(paddedAdvData + advDataLen, 0, 31 - advDataLen - 1);
+    uint8_t paddedAdvData[32]={0}; //Creat Padded Advertisement Data Array
+    uint8_t paddedScanRspData[32]={0}; //Creat Padded Scan Response Data Array
 
-    paddedScanRspData[0] = (uint8_t)scanRspDataLen;
-    memcpy(paddedScanRspData, (const void*)scanRspData, scanRspDataLen);
-    memset(paddedScanRspData+ scanRspDataLen, 0, 31 - scanRspDataLen - 1);
+    //Pass data from one array to another
+    paddedAdvData[0] = (uint8_t)advDataLen; //make first value of paddedAdvData advDataLen
+    for (int i = 0; i < advDataLen + 1; i++) { //Copy each value of advData to paddedAdvData starting from second value
+      paddedAdvData[i+1] = advData[i];
+    }
+    for (int i = advDataLen +1; i < 32; i++) { //Fill with 0s
+      paddedAdvData[i] = 0;
+    }
+
+    paddedScanRspData[0] = (uint8_t)scanRspDataLen; //make first value of paddedScanRspData c
+    for (int i = 0; i < scanRspDataLen + 1; i++) { //Copy each value of scanRspData to paddedScanRspData starting from second value
+      paddedScanRspData[i+1] = scanRspData[i];
+    }
+    for (int i = scanRspDataLen +1; i < 32; i++) { //Fill with 0s
+      paddedScanRspData[i] = 0;
+    }
 
     // For Testing
     Serial.println("Padded Advertisement Data is:");
-    for(int i = 0; i < 31; i++)
+    for(int i = 0; i < 32; i++)
     {
       Serial.print(paddedAdvData[i],HEX);
       Serial.print(" ");
@@ -124,7 +138,7 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
       Serial.print("\n");
 
     Serial.println("Padded Scan Response Data is:");
-    for(int i = 0; i < 31; i++)
+    for(int i = 0; i < 32; i++)
     {
       Serial.print(paddedScanRspData[i],HEX);
       Serial.print(" ");
@@ -139,7 +153,7 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
 
 void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     // Create a byte array to hold the command
-    byte cmdByteList[1 + 1 + 31 + 31];
+    byte cmdByteList[1 + 1 + 32 + 32];
     
     // Assign b0 to the first byte of cmd
     cmdByteList[0] = 0X1C;
@@ -148,17 +162,17 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     cmdByteList[1] = mode;
     
     // Copy paddedAdvData into cmd starting from index 2
-    for (int i = 0; i < 31; i++) {
-        cmdByteList[i + 2] = paddedAdvData[i];
+    for (int i = 2; i < 34; i++) {
+        cmdByteList[i] = paddedAdvData[i-2];
     }
     
     // Copy paddedScanRspData into cmd starting from index 2 + advDataLength
-    for (int i = 0; i < 31; i++) {
-        cmdByteList[i + 2 + 31] = paddedScanRspData[i];
+    for (int i = 34; i < 66; i++) {
+        cmdByteList[i] = paddedScanRspData[i-34];
     }
     // For Testing
     Serial.println("Command Byte List Data is:");
-    for(int i = 0; i < 64; i++)
+    for(int i = 0; i < 66; i++)
     {
       Serial.print(cmdByteList[i],HEX);
       Serial.print(" ");
@@ -168,15 +182,20 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     uint8_t cmdByteListLen = sizeof(cmdByteList) / sizeof(cmdByteList[0]);
 
     int b0=(cmdByteListLen+3)/3; //Create the valuo for cmd[0]'b' which is the lenght of the command 
-    byte cmd[cmdByteListLen+1]; //Create the command array with lenght of the byte list + 1 for b0
+
+    Serial.println("b0: ");
+    Serial.println(b0);
+
+    uint8_t cmd[cmdByteListLen+1]; //Create the command array with lenght of the byte list + 1 for b0
 
     cmd[0]=b0; //Make b0 the value for cmd[0]
 
-    for (int i = 0; i < cmdByteListLen; i++) { //Copy the rest of the command data as 
-    cmd[i+1] = cmdByteList[i];
+    for (int i = 1; i < 67; i++) { //Copy the rest of the command data as 
+    cmd[i] = cmdByteList[i-1];
     }
 
     int cmdLen =  sizeof(cmd) / sizeof(cmd[0]); //Get the cmd length
+
 
     //For testing only
     Serial.println("Command Data is:");
@@ -187,7 +206,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     }
       Serial.print("\n");
     //
-    
+   
     
     unsigned char msg[cmdLen+1];// Prepare a byte array to hold the encoded message
     unsigned int msgLen = encode_base64(cmd,cmdLen,msg); //Create a variable to hold the length of the msg and encode the msg
