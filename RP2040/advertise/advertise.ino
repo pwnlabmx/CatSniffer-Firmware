@@ -92,7 +92,7 @@ void setup(){
         Serial.print("0x");
       else
         Serial.print("0x0");
-      Serial.print(scanRspData[i]); //Add , HEX again if needed
+      Serial.print(scanRspData[i],HEX); //Add , HEX again if needed
       Serial.print(" ");
     }
       Serial.print("\n");
