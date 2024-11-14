@@ -98,11 +98,14 @@ void setup(){
       Serial.print("\n");
     
     uint8_t error=cmdAdvertise(advData,scanRspData,0);
+    //Listen for response from the cc1352
     
 }
 
 void loop() {
+  listenForSerial1(1000);
   //Serial1.write("FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n");
+    listenForSerial1(1000); 
     if(millis() - catsniffer.previousMillis > catsniffer.led_interval) {
     catsniffer.previousMillis = millis(); 
     if(catsniffer.mode){
@@ -268,17 +271,11 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     }
     Serial.print("\n");
     
-    //Append "\r\n" to encoded_msg
-//    encoded_msg[encoded_length] = '\r';
-//    encoded_msg[encoded_length + 1] = '\n';
-//    encoded_length += 2;
-    
-
-//    char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
-//    int encodedMsgLength = strlen(encodedMsg);
      
     // Write the encoded message to serial
     Serial1.write(msg, msgLen);
+    Serial1.write("\r\n");
+
        
 }
 
@@ -311,3 +308,13 @@ void changeBand(catsniffer_t *cs, unsigned long newBand){
 
   return;
   }
+
+void listenForSerial1(unsigned long duration) {
+unsigned long startTime = millis();
+while (millis() - startTime < duration) {
+  if (Serial1.available()) {
+    int incomingByte = Serial1.read();
+      Serial.write(incomingByte);  // Send it out to Serial (USB)
+   }
+  }
+}
