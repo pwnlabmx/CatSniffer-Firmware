@@ -1,10 +1,15 @@
 #include "SerialPassthroughwithboot.h"
-#include <base64.hpp>
+#include "base64.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+catsniffer_t catsniffer;
+
+uint8_t LEDs[3]={LED1,LED2,LED3};
+int i=0;
 
 // Define advertisement data, hardcoded for now
 uint8_t advData[] = {
@@ -36,55 +41,78 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData);
 
 
 void setup(){
-Serial.begin(921600);
-Serial.begin(921600);
-
-while (!Serial) ;
-
-pinMode(Pin_Button, INPUT_PULLUP);
-pinMode(Pin_Boot, INPUT_PULLUP);
-pinMode(Pin_Reset, OUTPUT);
-pinMode(Pin_Reset_Viewer, INPUT);
-digitalWrite(Pin_Reset, HIGH);
+    
+    catsniffer.led_interval=1000;
+    catsniffer.baud=921600;
+    catsniffer.mode=PASSTRHOUGH;  
+    
+    Serial.begin(catsniffer.baud);
+    Serial1.begin(catsniffer.baud);
+    
+    while (!Serial) ;
+    
+    pinMode(Pin_Button, INPUT_PULLUP);
+    pinMode(Pin_Boot, INPUT_PULLUP);
+    pinMode(Pin_Reset, OUTPUT);
+    pinMode(Pin_Reset_Viewer, INPUT);
+    digitalWrite(Pin_Reset, HIGH);
+      
+    pinMode(LED1,OUTPUT);
+    pinMode(LED2,OUTPUT);
+    pinMode(LED3,OUTPUT);
+    pinMode(CTF1, OUTPUT);
+    pinMode(CTF2, OUTPUT);
+    pinMode(CTF3, OUTPUT);
   
-pinMode(LED1,OUTPUT);
-pinMode(LED2,OUTPUT);
-pinMode(LED3,OUTPUT);
-pinMode(CTF1, OUTPUT);
-pinMode(CTF2, OUTPUT);
-pinMode(CTF3, OUTPUT);
 
-  //Make all cJTAG pins an input 
-  for(int i=11;i<15;i++){
-    pinMode(i,INPUT);
-
-// For Testing
-Serial.println("Advertisement Data is:");
-for(int i = 0; i < advDataLen; i++)
-{
-  Serial.print(advData[i],HEX);
-  Serial.print(" ");
-}
-Serial.print("\n");
-
-//delay(5000);
-Serial.println("Scan Response Data is:");
-for(int i = 0; i < scanRspDataLen; i++)
-{
-  Serial.print(scanRspData[i],HEX); //Add , HEX again if needed
-  Serial.print(" ");
-}
-  Serial.print("\n");
-//
-
-
-uint8_t error=cmdAdvertise(advData,scanRspData,0);
-
-}
+    //Make all cJTAG pins an input 
+    for(int i=11;i<15;i++){
+      pinMode(i,INPUT);
+    }
+    
+    changeBand(&catsniffer, GIG);
+    // For Testing
+    Serial.println("Advertisement Data is:");
+    for(int i = 0; i < advDataLen; i++)
+    {
+      if(advData[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
+      Serial.print(advData[i],HEX);
+      Serial.print(" ");
+    }
+    Serial.print("\n");
+    
+    //delay(5000);
+    Serial.println("Scan Response Data is:");
+    for(int i = 0; i < scanRspDataLen; i++)
+    {
+      if(scanRspData[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
+      Serial.print(scanRspData[i]); //Add , HEX again if needed
+      Serial.print(" ");
+    }
+      Serial.print("\n");
+    
+    uint8_t error=cmdAdvertise(advData,scanRspData,0);
+    
 }
 
 void loop() {
   //Serial1.write("FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n");
+    if(millis() - catsniffer.previousMillis > catsniffer.led_interval) {
+    catsniffer.previousMillis = millis(); 
+    if(catsniffer.mode){
+      digitalWrite(LEDs[i], !digitalRead(LEDs[i]));
+      i++;
+      if(i>2)i=0;
+    }else{
+      digitalWrite(LED3, !digitalRead(LED3));
+    }
+  }
 }
 
 
@@ -131,6 +159,10 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
     Serial.println("Padded Advertisement Data is:");
     for(int i = 0; i < 32; i++)
     {
+      if(paddedAdvData[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
       Serial.print(paddedAdvData[i],HEX);
       Serial.print(" ");
 
@@ -140,6 +172,10 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
     Serial.println("Padded Scan Response Data is:");
     for(int i = 0; i < 32; i++)
     {
+      if(paddedScanRspData[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
       Serial.print(paddedScanRspData[i],HEX);
       Serial.print(" ");
     }
@@ -174,6 +210,10 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     Serial.println("Command Byte List Data is:");
     for(int i = 0; i < 66; i++)
     {
+      if(cmdByteList[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
       Serial.print(cmdByteList[i],HEX);
       Serial.print(" ");
     }
@@ -201,6 +241,10 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     Serial.println("Command Data is:");
     for(int i = 0; i < cmdLen; i++)
     {
+      if(cmd[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
       Serial.print(cmd[i],HEX);
       Serial.print(" ");
     }
@@ -215,26 +259,55 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     Serial.println("MSG Data is:");
     for(int i = 0; i < msgLen; i++)
     {
+      if(msg[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
       Serial.print(msg[i],HEX);
       Serial.print(" ");
     }
     Serial.print("\n");
-    //
-
     
-     //Append "\r\n" to encoded_msg
-    //encoded_msg[encoded_length] = '\r';
-    //encoded_msg[encoded_length + 1] = '\n';
-    //encoded_length += 2;
+    //Append "\r\n" to encoded_msg
+//    encoded_msg[encoded_length] = '\r';
+//    encoded_msg[encoded_length + 1] = '\n';
+//    encoded_length += 2;
     
 
-    //char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
-     //int encodedMsgLength = strlen(encodedMsg);
+//    char *encodedMsg = "FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n";
+//    int encodedMsgLength = strlen(encodedMsg);
      
     // Write the encoded message to serial
-    //Serial1.write(encodedMsg, encodedMsgLength);
-    
-    
+    Serial1.write(msg, msgLen);
+       
 }
 
 
+void changeBand(catsniffer_t *cs, unsigned long newBand){
+  if(newBand==cs->band)
+    return;
+  switch(newBand){
+    case GIG:   //2.4Ghz CC1352
+      digitalWrite(CTF1,  LOW);
+      digitalWrite(CTF2,  HIGH);
+      digitalWrite(CTF3,  LOW);
+    break;
+
+    case SUBGIG_1: //Sub-ghz CC1352
+      digitalWrite(CTF1,  LOW);
+      digitalWrite(CTF2,  LOW);
+      digitalWrite(CTF3,  HIGH);
+    break;
+
+    case SUBGIG_2: //LoRa
+      digitalWrite(CTF1,  HIGH);
+      digitalWrite(CTF2,  LOW);
+      digitalWrite(CTF3,  LOW);
+    break;
+
+    default:
+    break;
+    }
+
+  return;
+  }
