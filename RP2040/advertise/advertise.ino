@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//#define TEST;
+
 catsniffer_t catsniffer;
 
 uint8_t LEDs[3]={LED1,LED2,LED3};
@@ -20,10 +22,6 @@ uint8_t advData[] = {
 };
 uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
-//advData:  b"\x02\x01\x1a\x02\n\x0c\x11\x07d\x14\xea\xd7/\xdb\xa3\xb0YH\x16\xd40\x82\xcb'\x05\x03\n\x18\r\x18"  Print de python
-//advData:      2   1   1A   2  A  C  11   7   64  14  EA   D7  2F  DB   A3   B0   59  48  16  D4  30 82 CB 27 5 3 A 18 D 18
-
-
 //Define the scan response data, hardcoded for now 
 uint8_t devName[] = "NCC Goat";
 //char scanRspData:  "\t\tNCC Goat";
@@ -33,7 +31,6 @@ uint8_t scanRspData[] = {
 };
 uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
 
-//paddedScnData:  [10, 9, 9, 78, 67, 67, 32, 71, 111, 97, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 //Function definitions
 uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode);
@@ -71,7 +68,9 @@ void setup(){
     }
     
     changeBand(&catsniffer, GIG);
-    // For Testing
+    
+    
+#ifdef TEST
     Serial.println("Advertisement Data is:");
     for(int i = 0; i < advDataLen; i++)
     {
@@ -84,7 +83,6 @@ void setup(){
     }
     Serial.print("\n");
     
-    //delay(5000);
     Serial.println("Scan Response Data is:");
     for(int i = 0; i < scanRspDataLen; i++)
     {
@@ -96,6 +94,7 @@ void setup(){
       Serial.print(" ");
     }
       Serial.print("\n");
+#endif
     
     uint8_t error=cmdAdvertise(advData,scanRspData,0);
     //Listen for response from the cc1352
@@ -103,9 +102,8 @@ void setup(){
 }
 
 void loop() {
-  listenForSerial1(1000);
-  //Serial1.write("FxwAHgIBGgIKDBEHZBTq1y/bo7BZSBbUMILLJwUDChgNGAAMCwlDYXRTbmlmZmVyAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n");
-    listenForSerial1(1000); 
+  listenForSerial1(100);
+
     if(millis() - catsniffer.previousMillis > catsniffer.led_interval) {
     catsniffer.previousMillis = millis(); 
     if(catsniffer.mode){
@@ -116,6 +114,7 @@ void loop() {
       digitalWrite(LED3, !digitalRead(LED3));
     }
   }
+
 }
 
 
@@ -133,10 +132,12 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
         return -3;// Error: Mode must be 0 (connectable), 2 (non-connectable), or 3 (scannable)
     }
     
+#ifdef TEST
     Serial.println("advDataLen: ");
     Serial.println(advDataLen);
     Serial.println("advDataLen: ");
     Serial.println(scanRspDataLen);
+#endif
 
     uint8_t paddedAdvData[32]={0}; //Creat Padded Advertisement Data Array
     uint8_t paddedScanRspData[32]={0}; //Creat Padded Scan Response Data Array
@@ -158,7 +159,7 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
       paddedScanRspData[i] = 0;
     }
 
-    // For Testing
+#ifdef TEST
     Serial.println("Padded Advertisement Data is:");
     for(int i = 0; i < 32; i++)
     {
@@ -183,7 +184,9 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
       Serial.print(" ");
     }
     Serial.print("\n");
-    //
+#endif
+
+
     cmdSend(mode,paddedAdvData,paddedScanRspData);
 
     return 0;
@@ -210,6 +213,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
         cmdByteList[i] = paddedScanRspData[i-34];
     }
     // For Testing
+#ifdef TEST
     Serial.println("Command Byte List Data is:");
     for(int i = 0; i < 66; i++)
     {
@@ -221,13 +225,16 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
       Serial.print(" ");
     }
       Serial.print("\n");
+#endif
     //
     uint8_t cmdByteListLen = sizeof(cmdByteList) / sizeof(cmdByteList[0]);
 
     int b0=(cmdByteListLen+3)/3; //Create the valuo for cmd[0]'b' which is the lenght of the command 
 
+#ifdef TEST
     Serial.println("b0: ");
     Serial.println(b0);
+#endif
 
     uint8_t cmd[cmdByteListLen+1]; //Create the command array with lenght of the byte list + 1 for b0
 
@@ -239,7 +246,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
 
     int cmdLen =  sizeof(cmd) / sizeof(cmd[0]); //Get the cmd length
 
-
+#ifdef TEST
     //For testing only
     Serial.println("Command Data is:");
     for(int i = 0; i < cmdLen; i++)
@@ -252,6 +259,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
       Serial.print(" ");
     }
       Serial.print("\n");
+#endif
     //
    
     
@@ -259,6 +267,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     unsigned int msgLen = encode_base64(cmd,cmdLen,msg); //Create a variable to hold the length of the msg and encode the msg
 
     //For testing only
+#ifdef TEST
     Serial.println("MSG Data is:");
     for(int i = 0; i < msgLen; i++)
     {
@@ -270,6 +279,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
       Serial.print(" ");
     }
     Serial.print("\n");
+#endif
     
      
     // Write the encoded message to serial
