@@ -1,12 +1,12 @@
+#include "Base64.h"
 #include "SerialPassthroughwithboot.h"
-#include "base64.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-//#define TEST;
+#define TEST;
 
 catsniffer_t catsniffer;
 
@@ -48,6 +48,7 @@ void setup(){
     
     while (!Serial) ;
     
+    
     pinMode(Pin_Button, INPUT_PULLUP);
     pinMode(Pin_Boot, INPUT_PULLUP);
     pinMode(Pin_Reset, OUTPUT);
@@ -60,12 +61,13 @@ void setup(){
     pinMode(CTF1, OUTPUT);
     pinMode(CTF2, OUTPUT);
     pinMode(CTF3, OUTPUT);
-  
+    
 
     //Make all cJTAG pins an input 
     for(int i=11;i<15;i++){
       pinMode(i,INPUT);
     }
+    
     
     changeBand(&catsniffer, GIG);
     
@@ -195,7 +197,7 @@ uint8_t cmdAdvertise(uint8_t *advData, uint8_t *scanRspData, uint8_t mode) {
 
 void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     // Create a byte array to hold the command
-    byte cmdByteList[1 + 1 + 32 + 32];
+    byte cmdByteList[66]; //[1 + 1 + 32 + 32]
     
     // Assign b0 to the first byte of cmd
     cmdByteList[0] = 0X1C;
@@ -236,7 +238,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     Serial.println(b0);
 #endif
 
-    uint8_t cmd[cmdByteListLen+1]; //Create the command array with lenght of the byte list + 1 for b0
+    char cmd[cmdByteListLen+1]; //Create the command array with lenght of the byte list + 1 for b0
 
     cmd[0]=b0; //Make b0 the value for cmd[0]
 
@@ -260,21 +262,23 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
     }
       Serial.print("\n");
 #endif
-    //
-   
-    
-    unsigned char msg[cmdLen+1];// Prepare a byte array to hold the encoded message
-    unsigned int msgLen = encode_base64(cmd,cmdLen,msg); //Create a variable to hold the length of the msg and encode the msg
+
+    //Create a variable to hold the mesage and calculate the length of that message using the library function
+    int msgLen = base64_enc_len(cmdLen);
+    char msg[msgLen];
+
+    base64_encode(msg, cmd, cmdLen); 
+
 
     //For testing only
 #ifdef TEST
     Serial.println("MSG Data is:");
     for(int i = 0; i < msgLen; i++)
     {
-      if(msg[i]>0x0F)
-        Serial.print("0x");
-      else
-        Serial.print("0x0");
+      //if(msg[i]>0x0F)
+        //Serial.print("0x");
+      //else
+        //Serial.print("0x0");
       Serial.print(msg[i],HEX);
       Serial.print(" ");
     }
@@ -284,7 +288,7 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData) {
      
     // Write the encoded message to serial
     Serial1.write(msg, msgLen);
-    Serial1.write("\r\n");
+    Serial1.write("\r\n"); //send the carriage return and line 
 
        
 }
