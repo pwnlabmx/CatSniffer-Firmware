@@ -23,12 +23,19 @@ uint8_t advData[] = {
 uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
 //Define the scan response data, hardcoded for now 
-uint8_t devName[] = "NCC Goat";
-//char scanRspData:  "\t\tNCC Goat";
-uint8_t scanRspData[] = {
-  0x09, 0x09, 0x4e, 0x43, 0x43, 0x20, 0x47, 0x6f,
-  0x61, 0x74
-};
+/*
+char devName[] = "CatSniffer"; //0b 09 43 61 74 53 6e 69 66 66 65 72 Define the name of the device
+int devNameLen = strlen(devName);//
+uint8_t scanRspData[devNameLen +2]; //
+uint8_t scanRspData[0] = devNameLen;
+uint8_t scanRspData[1] = 9;
+for (int i = 0; i < (devNameLen + 2); i++) { //Copy each value of advData to paddedAdvData starting from second value
+  scanRspData[i+2] = devName[i];
+}
+*/
+
+uint8_t scanRspData[] = {0x0B, 0x09, 0x43, 0x61, 0x74, 0x53, 0x6E, 0x69, 0x66, 0x66, 0x65, 0x72}; // Name hard coded, lenght of name + 0x09 + CatSniffer in Hex
+
 uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
 
 
@@ -98,13 +105,27 @@ void setup(){
       Serial.print("\n");
 #endif
     
-    uint8_t error=cmdAdvertise(advData,scanRspData,0);
-    //Listen for response from the cc1352
+    uint8_t error=cmdAdvertise(advData,scanRspData,0); /////////////////////////////////////////////////////////////////// MODE ////////////////////////////////////////////////////////////////////////
+    //Error handling
+    if (error == -1)
+    {
+      Serial.println("Error: advData too long");
+    }  
+    else if (error == -2)
+    {
+      Serial.println("Error: scanRspData too long");
+    }  
+    else if (error == -3)
+    {
+      Serial.println("Error: Mode must be 0 (connectable), 2 (non-connectable), or 3 (scannable)");
+    } 
+    //Listen for response from the cc1352 
+    listenForSerial1(1500);
     
 }
 
 void loop() {
-  listenForSerial1(100);
+  
 
     if(millis() - catsniffer.previousMillis > catsniffer.led_interval) {
     catsniffer.previousMillis = millis(); 
@@ -327,8 +348,22 @@ void listenForSerial1(unsigned long duration) {
 unsigned long startTime = millis();
 while (millis() - startTime < duration) {
   if (Serial1.available()) {
-    int incomingByte = Serial1.read();
-      Serial.write(incomingByte);  // Send it out to Serial (USB)
+    int incomingByte = Serial1.read(); //read serial and save it to a variable
+    Serial.print("Byte original: ");
+    Serial.println(incomingByte, HEX);
+    //char incomingByteArray[100];
+    //itoa(incomingByte, incomingByteArray, 10);
+
+  //Decode
+  /*
+    int incomingByteLen = sizeof(incomingByte); //
+    int incomingByteArrayDecodedLen = base64_dec_len(incomingByteArray, 100);
+    char incomingByteArrayDecoded[incomingByteArrayDecodedLen];
+    base64_decode(incomingByteArrayDecoded, incomingByteArray, 100);
+  */
+    //Print
+    //Serial.print("Byte decodificado: ");
+    //Serial.println(incomingByteArrayDecoded);  // Send it out to Serial (USB)
    }
   }
 }
