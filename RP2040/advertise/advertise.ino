@@ -23,8 +23,8 @@ uint8_t advData[] = {
 uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
 //Define the scan response data, hardcoded for now 
+String devName = "CatSniffer"; //0b 09 43 61 74 53 6e 69 66 66 65 72 Define the name of the device
 /*
-char devName[] = "CatSniffer"; //0b 09 43 61 74 53 6e 69 66 66 65 72 Define the name of the device
 int devNameLen = strlen(devName);//
 uint8_t scanRspData[devNameLen +2]; //
 uint8_t scanRspData[0] = devNameLen;
@@ -33,7 +33,6 @@ for (int i = 0; i < (devNameLen + 2); i++) { //Copy each value of advData to pad
   scanRspData[i+2] = devName[i];
 }
 */
-
 uint8_t scanRspData[] = {0x0B, 0x09, 0x43, 0x61, 0x74, 0x53, 0x6E, 0x69, 0x66, 0x66, 0x65, 0x72}; // Name hard coded, lenght of name + 0x09 + CatSniffer in Hex
 
 uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
@@ -45,6 +44,14 @@ void cmdSend(int mode, byte* paddedAdvData, byte* paddedScanRspData);
 
 
 void setup(){
+  uint8_t devNameLen = devName.length();
+  uint8_t scanRspData_1[devNameLen +2]; 
+  scanRspData_1[0] = devNameLen;
+  scanRspData_1[1] = 0x09;
+  for (int i = 0; i < devNameLen; i++) { //Copy each value of advData to paddedAdvData starting from second value
+    scanRspData_1[i+2] = devName[i];
+  }
+    
     
     catsniffer.led_interval=1000;
     catsniffer.baud=921600;
@@ -100,6 +107,18 @@ void setup(){
       else
         Serial.print("0x0");
       Serial.print(scanRspData[i],HEX); //Add , HEX again if needed
+      Serial.print(" ");
+    }
+      Serial.print("\n");
+
+    Serial.println("Scan Response Data 1 is:");
+    for(int i = 0; i < scanRspDataLen; i++)
+    {
+      if(scanRspData_1[i]>0x0F)
+        Serial.print("0x");
+      else
+        Serial.print("0x0");
+      Serial.print(scanRspData_1[i],HEX); //Add , HEX again if needed
       Serial.print(" ");
     }
       Serial.print("\n");
