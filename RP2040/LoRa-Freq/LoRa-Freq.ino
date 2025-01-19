@@ -18,6 +18,11 @@
 #define CTF2 9
 #define CTF3 10
 
+#define LED1 (27)
+#define LED2 (26)
+#define LED3 (28)
+
+uint8_t LEDs[3]={LED1,LED2,LED3};
 
 // SX1262 has the following connections:
 // NSS pin:   17
@@ -32,15 +37,15 @@ const float freqEnd = 928;
 
 void setup() {
   Serial.begin(921600);
-  while(!Serial);
+  while(!Serial)
 
   // initialize SX1262 FSK modem at the initial frequency
-  Serial.print(F("[SX1262] Initializing ... "));
+  Serial.println(F("DONE: Initializing ... "));
   int state = radio.beginFSK(freqStart,4.8,5.0,156.2,10,16,0,false);
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
-    Serial.print(F("failed, code "));
+    Serial.print(F("ERROR:"));
     Serial.println(state);
     while (true) { delay(10); }
   }
@@ -48,25 +53,25 @@ void setup() {
   // upload a patch to the SX1262 to enable spectral scan
   // NOTE: this patch is uploaded into volatile memory,
   //       and must be re-uploaded on every power up
-  Serial.print(F("[SX1262] Uploading patch ... "));
+  Serial.print(F("DONE Uploading patch ... "));
   state = radio.uploadPatch(sx126x_patch_scan, sizeof(sx126x_patch_scan));
   if(state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
+    Serial.println(F("DONE"));
   } else {
-    Serial.print(F("failed, code "));
+    Serial.print(F("ERROR:"));
     Serial.println(state);
     while (true) { delay(10); }
   }
 
   // configure scan bandwidth to 234.4 kHz
   // and disable the data shaping
-  Serial.print(F("[SX1262] Setting scan parameters ... "));
+  // Serial.print(F("[SX1262] Setting scan parameters ... "));
   state = radio.setRxBandwidth(234.3);
   state |= radio.setDataShaping(RADIOLIB_SHAPING_NONE);
   if(state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
+    Serial.println(F("DONE"));
   } else {
-    Serial.print(F("failed, code "));
+    Serial.print(F("ERROR:"));
     Serial.println(state);
     while (true) { delay(10); }
   }
@@ -78,23 +83,26 @@ void setup() {
   // TX enable:   5
   
   radio.setRfSwitchPins(21, 20);
+  digitalWrite(LED1, 0);
+  digitalWrite(LED2, 1);
+  digitalWrite(LED3, 0);
 }
 
 void loop() {
   // perform scan over the entire frequency range
   float freq = freqStart;
   while(freq <= freqEnd) {
-    Serial.print("FREQ ");
-    Serial.println(freq, 2);
+    // Serial.print("FREQ ");
+    // Serial.println(freq, 2);
 
     // start spectral scan
     // number of samples: 2048 (fewer samples = better temporal resolution)
-    Serial.print(F("[SX1262] Starting spectral scan ... "));
+    // Serial.print(F("[SX1262] Starting spectral scan ... "));
     int state = radio.spectralScanStart(2048);
     if(state == RADIOLIB_ERR_NONE) {
-      Serial.println(F("success!"));
+      Serial.println(F("DONE"));
     } else {
-      Serial.print(F("failed, code "));
+      Serial.print(F("ERROR:"));
       Serial.println(state);
       while (true) { delay(10); }
     }
@@ -108,13 +116,17 @@ void loop() {
     uint16_t results[RADIOLIB_SX126X_SPECTRAL_SCAN_RES_SIZE];
     state = radio.spectralScanGetResult(results);
     if(state == RADIOLIB_ERR_NONE) {
-      // we have some results, print it
-      Serial.print("SCAN ");
+      digitalWrite(LED1, 1);
+      digitalWrite(LED2, 1);
+      digitalWrite(LED3, 1);
+      Serial.print("@S");
+      Serial.print(freq, 2);
+      Serial.print(";");
       for(uint8_t i = 0; i < RADIOLIB_SX126X_SPECTRAL_SCAN_RES_SIZE; i++) {
         Serial.print(results[i]);
         Serial.print(',');
       }
-      Serial.println(" END");
+      Serial.println("@E");
     }
 
     // wait a little bit before the next scan
@@ -125,6 +137,10 @@ void loop() {
     // or the same as the Rx bandwidth set in setup
     freq += 0.2;
     radio.setFrequency(freq);
+    digitalWrite(LED1, 0);
+    digitalWrite(LED2, 0);
+    digitalWrite(LED3, 0);
   }
+
   
 }
