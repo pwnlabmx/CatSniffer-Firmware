@@ -175,7 +175,7 @@ void loop() {
 
       } else if (state == RADIOLIB_CHANNEL_FREE) {
         // channel is free
-        Serial.print(F("[SX1262] Channel is free!"));
+        Serial.println(F("[SX1262] Channel is free!"));
 
       } else {
         // some other error occurred
