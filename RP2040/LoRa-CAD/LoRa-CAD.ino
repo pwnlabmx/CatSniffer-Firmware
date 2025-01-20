@@ -46,8 +46,8 @@ void setFlag(void) {
 
 void setup() {
   Serial.begin(921600);
-  while (!Serial)
-    ;
+  while (!Serial);
+  
   pinMode(CTF1, OUTPUT);
   pinMode(CTF2, OUTPUT);
   pinMode(CTF3, OUTPUT);
