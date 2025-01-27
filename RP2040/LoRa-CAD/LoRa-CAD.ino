@@ -24,6 +24,8 @@
 #define LED2 (26)
 #define LED3 (28)
 
+// #define VERBOSE
+
 uint8_t LEDs[3] = { LED1, LED2, LED3 };
 
 // SX1262 has the following connections:
@@ -129,14 +131,11 @@ void setup() {
 
 void resetScan(){
   if (!receiving && runningScan) {
+    #ifdef VERBOSE
     Serial.print(F("[SX1262] Starting scan for LoRa preamble ... "));
+    #endif
     int state = radio.startChannelScan();
-    if (state == RADIOLIB_ERR_NONE) {
-      Serial.println(F("success!"));
-    } else {
-      Serial.print(F("failed, code "));
-      Serial.println(state);
-    }
+    handleErrorCodePrint(state);
   }
 }
 
@@ -183,9 +182,7 @@ void loop() {
         Serial.println(F(" Hz"));
 
       } else {
-        // some other error occurred
-        Serial.print(F("[SX1262] Failed, code "));
-        Serial.println(state);
+        handleErrorCodePrint(state);
       }
 
       // reception is done now
@@ -198,26 +195,13 @@ void loop() {
 
       if (state == RADIOLIB_LORA_DETECTED) {
         // LoRa packet was detected
-        Serial.print(F("[SX1262] Packet detected, starting reception ... "));
         state = radio.startReceive();
-        if (state == RADIOLIB_ERR_NONE) {
-          Serial.println(F("success!"));
-        } else {
-          Serial.print(F("failed, code "));
-          Serial.println(state);
-        }
-
+        handleErrorCodePrint(state);
         // set the flag for ongoing reception
         receiving = true;
 
-      } else if (state == RADIOLIB_CHANNEL_FREE) {
-        // channel is free
-        Serial.println(F("[SX1262] Channel is free!"));
-
-      } else {
-        // some other error occurred
-        Serial.print(F("[SX1262] Failed, code "));
-        Serial.println(state);
+      }else {
+        handleErrorCodePrint(state);
       }
     }
 
@@ -228,7 +212,6 @@ void loop() {
     if(millis() - previousMillis > interval){
       previousMillis = millis(); 
       if(!recivedPacket){
-        Serial.println(F("[SX1262] Timeout, reseting scan"));
         recivedPacket = false;
         receiving = false;
         resetScan();
@@ -239,10 +222,11 @@ void loop() {
 
 void startRadioScanning(){
   // start scanning the channel
+  #ifdef VERBOSE
   Serial.print(F("[SX1262] Starting scan for LoRa preamble ... "));
+  #endif
   int state = radio.startChannelScan();
   if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
     runningScan = true;
     resetScan();
   } else {
@@ -409,6 +393,26 @@ void unrecognized(const char *command) {
   Serial.println("Command not found, type help to get the valid commands");
 }
 
+
+void handleErrorCodePrint(int16_t state){
+  switch (state)
+  {
+  case RADIOLIB_ERR_NONE:
+     #ifdef VERBOSE
+    Serial.println(F("success!"));
+    #endif
+    break;
+  case RADIOLIB_CHANNEL_FREE:
+    #ifdef VERBOSE
+    Serial.println(F("[SX1262] Channel is free!"));
+    #endif
+    break;
+  default:
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    break;
+  }
+}
 
 byte nibble(char c)
 {
