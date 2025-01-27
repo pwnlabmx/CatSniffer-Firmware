@@ -14,7 +14,6 @@ uint8_t LEDs[3]={LED1,LED2,LED3};
 int i=0;
 
 // Define advertisement data, hardcoded for now
-
 uint8_t advData[] = {
   0x02, 0x01, 0x1A, 0x02, 0x0A, 0x0C, 0x11, 0x07,
   0x64, 0x14, 0xEA, 0xD7, 0x2F, 0xDB, 0xA3, 0xB0,
@@ -22,19 +21,8 @@ uint8_t advData[] = {
   0x05, 0x03, 0x0A, 0x18, 0x0D, 0x18
 };
 
-/*
-uint8_t advData[] = {
-  0x1E, 0xFF, 0x4C, 0x00, 0x12, 0x19, 0x10, 0x62,
-  0x99, 0x96, 0x85, 0xAB, 0x4C, 0x0A, 0xB4, 0xA1,
-  0xD6, 0xA4, 0x13, 0xA1, 0x9B, 0x30, 0x84, 0x4D,
-  0x60, 0x70, 0x59, 0xCF, 0xA2, 0x01, 0x45
-};
-*/
-
-//Define the scan response data, hardcoded for now 
+//Define the scan response data
 String devName = "CatSniffer"; //0b 09 43 61 74 53 6e 69 66 66 65 72 Define the name of the device
-//uint8_t scanRspData[] = {0x0B, 0x09, 0x43, 0x61, 0x74, 0x53, 0x6E, 0x69, 0x66, 0x66, 0x65, 0x72}; // Name hard coded, lenght of name + 0x09 + CatSniffer in Hex
-
 
 //Function definitions
 int8_t cmdAdvertise(uint8_t * advData, uint8_t advDataLen, uint8_t * scanRspData, uint8_t scanRspDataLen, uint8_t mode);
@@ -42,6 +30,46 @@ int8_t cmdAdvertise(uint8_t * advData, uint8_t advDataLen, uint8_t * scanRspData
 void cmdSend(int mode, uint8_t* paddedAdvData, uint8_t* paddedScanRspData);
 
 void setup(){   
+    //Set
+    catsniffer.led_interval=1000;
+    catsniffer.baud=921600;
+    catsniffer.mode=PASSTRHOUGH;  
+    
+    #ifdef TEST  
+      Serial.begin(catsniffer.baud);
+    #endif
+    Serial1.begin(catsniffer.baud);
+
+    #ifdef TEST  
+      while (!Serial) ;
+    #endif
+    
+    
+    pinMode(Pin_Button, INPUT_PULLUP);
+    pinMode(Pin_Boot, INPUT_PULLUP);
+    pinMode(Pin_Reset, OUTPUT);
+    pinMode(Pin_Reset_Viewer, INPUT);
+    digitalWrite(Pin_Reset, HIGH);
+      
+    pinMode(LED1,OUTPUT);
+    pinMode(LED2,OUTPUT);
+    pinMode(LED3,OUTPUT);    
+    pinMode(CTF1, OUTPUT);
+    pinMode(CTF2, OUTPUT);
+    pinMode(CTF3, OUTPUT);
+    
+
+    //Make all cJTAG pins an input 
+    for(int i=11;i<15;i++){
+      pinMode(i,INPUT);
+    }
+
+    digitalWrite(LED3,  HIGH);
+    delay(1000);
+    digitalWrite(LED3,  LOW);
+
+    changeBand(&catsniffer, GIG);
+
 
   uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
@@ -54,40 +82,6 @@ void setup(){
   }
 
   uint8_t scanRspDataLen = sizeof(scanRspData) / sizeof(scanRspData[0]);
-
-
-    catsniffer.led_interval=1000;
-    catsniffer.baud=921600;
-    catsniffer.mode=PASSTRHOUGH;  
-    
-    #ifdef TEST  
-      Serial.begin(catsniffer.baud);
-    #endif
-    Serial1.begin(catsniffer.baud);
-
-    while (!Serial) ;
-    
-    pinMode(Pin_Button, INPUT_PULLUP);
-    pinMode(Pin_Boot, INPUT_PULLUP);
-    pinMode(Pin_Reset, OUTPUT);
-    pinMode(Pin_Reset_Viewer, INPUT);
-    digitalWrite(Pin_Reset, HIGH);
-      
-    pinMode(LED1,OUTPUT);
-    pinMode(LED2,OUTPUT);
-    pinMode(LED3,OUTPUT);
-    pinMode(CTF1, OUTPUT);
-    pinMode(CTF2, OUTPUT);
-    pinMode(CTF3, OUTPUT);
-    
-
-    //Make all cJTAG pins an input 
-    for(int i=11;i<15;i++){
-      pinMode(i,INPUT);
-    }
-    
-    
-    changeBand(&catsniffer, GIG);
     
 #ifdef TEST
     Serial.println("Advertisement Data is:");
@@ -115,8 +109,8 @@ void setup(){
       Serial.print("\n");
 #endif
     
-    int8_t error = cmdAdvertise(advData, advDataLen, scanRspData, scanRspDataLen, 0); /////////////////////////////////////////////////////////////////// MODE ////////////////////////////////////////////////////////////////////////
-
+    //Call the Advertise Function
+    int8_t error = cmdAdvertise(advData, advDataLen, scanRspData, scanRspDataLen, 0); 
   #ifdef TEST
     //Error handling
     if (error == -1)
@@ -272,7 +266,7 @@ void cmdSend(int mode, uint8_t * paddedAdvData, uint8_t * paddedScanRspData) {
     }
       Serial.print("\n");
 #endif
-    //
+    
     uint8_t cmdByteListLen = sizeof(cmdByteList) / sizeof(cmdByteList[0]);
 
     int b0=(cmdByteListLen+3)/3; //Create the valuo for cmd[0]'b' which is the lenght of the command 
