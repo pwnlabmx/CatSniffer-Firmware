@@ -84,18 +84,18 @@ void setup() {
   digitalWrite(LED2, 0);
   digitalWrite(LED3, 0);
 
-  SCmd.addCommand("set_freq", setFrequency);
-  SCmd.addCommand("set_sf", setSpreadFactor);
-  SCmd.addCommand("set_bw", setBandWidth);
-  SCmd.addCommand("set_cr", setCodingRate);
-  SCmd.addCommand("set_sw", setSyncWord);
-  SCmd.addCommand("set_pl", setPreambleLength);
-  SCmd.addCommand("set_op", setOutputPower);
-  SCmd.addCommand("start", setScanningStart);
-  SCmd.addCommand("stop", setScanningStop);
+  SCmd.addCommand("set_freq", cmdSetFrequency);
+  SCmd.addCommand("set_sf", cmdSetSpreadFactor);
+  SCmd.addCommand("set_bw", cmdSetBandWidth);
+  SCmd.addCommand("set_cr", cmdSetCodingRate);
+  SCmd.addCommand("set_sw", cmdSetSyncWord);
+  SCmd.addCommand("set_pl", cmdSetPreambleLength);
+  SCmd.addCommand("set_op", cmdSetOutputPower);
+  SCmd.addCommand("start", cmdSetScanningStart);
+  SCmd.addCommand("stop", cmdSetScanningStop);
   
-  SCmd.addCommand("get_config", getConfiguration);
-  SCmd.addCommand("get_state", getScanning);
+  SCmd.addCommand("get_config", cmdGetConfiguration);
+  SCmd.addCommand("get_state", cmdGetScanning);
   SCmd.addCommand("help", help);
   
 
@@ -235,12 +235,12 @@ void startRadioScanning(){
   }
 }
 
-void setPreambleLength(){
+void cmdSetPreambleLength(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
     int tmp_value = atoi(arg);
-    if(radio.setPreambleLength(tmp_value) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH){
+    if(radio.cmdSetPreambleLength(tmp_value) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH){
       Serial.println(F("Selected preamble length is invalid for this module!"));
       return;
     }
@@ -249,7 +249,7 @@ void setPreambleLength(){
   }
 }
 
-void setSyncWord(){
+void cmdSetSyncWord(){
   char *arg;
   byte syncWord;
   arg = SCmd.next();
@@ -258,7 +258,7 @@ void setSyncWord(){
       syncWord = 0;
       syncWord = nibble(*(arg)) << 4;
       syncWord = syncWord | nibble(*(arg + 1));
-      if (radio.setSyncWord(syncWord) != RADIOLIB_ERR_NONE) {
+      if (radio.cmdSetSyncWord(syncWord) != RADIOLIB_ERR_NONE) {
         Serial.println(F("Unable to set sync word!"));
         return;
       }
@@ -272,12 +272,12 @@ void setSyncWord(){
   }
 }
 
-void setOutputPower(){
+void cmdSetOutputPower(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
     int tmp_value = atoi(arg);
-    if(radio.setOutputPower(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
+    if(radio.cmdSetOutputPower(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
       Serial.println(F("Selected output power is invalid for this module!"));
       return;
     }
@@ -286,7 +286,7 @@ void setOutputPower(){
   }
 }
 
-void setCodingRate(){
+void cmdSetCodingRate(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
@@ -300,7 +300,7 @@ void setCodingRate(){
   }
 }
 
-void setSpreadFactor(){
+void cmdSetSpreadFactor(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
@@ -314,7 +314,7 @@ void setSpreadFactor(){
   }
 }
 
-void setBandWidth(){
+void cmdSetBandWidth(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
@@ -328,12 +328,12 @@ void setBandWidth(){
   }
 }
 
-void setFrequency(){
+void cmdSetFrequency(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
     float tmp_value = atoi(arg);
-    if(radio.setFrequency(tmp_value) == RADIOLIB_ERR_INVALID_FREQUENCY){
+    if(radio.cmdSetFrequency(tmp_value) == RADIOLIB_ERR_INVALID_FREQUENCY){
       Serial.println(F("Selected frequency is invalid for this module!"));
       return;
     }
@@ -342,7 +342,7 @@ void setFrequency(){
   }
 }
 
-void getConfiguration(){
+void cmdGetConfiguration(){
   Serial.println("Radio Configuration");
   Serial.println("Frequency = " + String(radioCtx.frequency) + " MHz");
   Serial.println("Bandwidth = " + String(radioCtx.bandWidth));
@@ -354,13 +354,13 @@ void getConfiguration(){
   Serial.println("Output Power = " + String(radioCtx.outputPower));
 }
 
-void setScanningStart(){
+void cmdSetScanningStart(){
   if(!runningScan){
     startRadioScanning();
   }
 }
 
-void setScanningStop(){
+void cmdSetScanningStop(){
   if(runningScan){
     scanFlag = false;
     runningScan = false;
@@ -368,7 +368,10 @@ void setScanningStop(){
   }
 }
 
-void getScanning(){}
+void cmdGetScanning(){
+  Serial.print("State:" );
+  Serial.println(runningScan?"Running" : "Stopped");
+}
 
 void help(){
   Serial.println("Available commands are:");

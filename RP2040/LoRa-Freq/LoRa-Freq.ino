@@ -35,12 +35,12 @@ struct RadioContext{
   float freq;
   float biteRate;
   float freqDeviation;
-  float bandwith;
+  float bandwidth;
   float power;
 };
 
 uint8_t LEDs[3]={LED1,LED2,LED3};
-bool running_scan = false;
+bool runningScan = false;
 
 // SX1262 has the following connections:
 // NSS pin:   17
@@ -60,6 +60,11 @@ void setup() {
   // Callbacks for serial commands
   SCmd.addCommand("set_start_freq", cmdSetFreqStart);
   SCmd.addCommand("set_end_freq", cmdSetFreqEnd);
+  SCmd.addCommand("start", cmdStart);
+  SCmd.addCommand("stop", cmdStop);
+  SCmd.addCommand("get_state", cmdGetState);
+  SCmd.addCommand("get_config", cmdGetConfiguration);
+  SCmd.addCommand("help", help);
   SCmd.setDefaultHandler(unrecognized);
 
   // frequency range in MHz to scan
@@ -67,12 +72,12 @@ void setup() {
   radioCtx.freqEnd = FREQ_RANGE_END;
   radioCtx.biteRate = 4.8;
   radioCtx.freqDeviation = 5.0;
-  radioCtx.bandwith = 156.2;
+  radioCtx.bandwidth = 156.2;
   radioCtx.power = 10;
   
   // initialize SX1262 FSK modem at the initial frequency
   Serial.println(F("DONE: Initializing ... "));
-  int state = radio.beginFSK(radioCtx.freqStart,radioCtx.biteRate,radioCtx.freqDeviation,radioCtx.bandwith,radioCtx.power,16,0,false);
+  int state = radio.beginFSK(radioCtx.freqStart,radioCtx.biteRate,radioCtx.freqDeviation,radioCtx.bandwidth,radioCtx.power,16,0,false);
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
@@ -107,7 +112,7 @@ void setup() {
     while (true) { delay(10); }
   }
 
-  running_scan = true;
+  runningScan = true;
     // some modules have an external RF switch
   // controlled via two pins (RX enable, TX enable)
   // to enable automatic control of the switch,
@@ -121,42 +126,11 @@ void setup() {
   digitalWrite(LED3, 0);
 }
 
-
-void cmdSetFreqStart(){
-  char *arg;
-  arg = SCmd.next();
-  if (arg != NULL){
-    float tmpFreqS = atoi(arg);  
-    if(tmpFreqS > radioCtx.freqEnd){
-      Serial.println(F("Selected frequency is invalid for this module!"));
-      return;
-    }
-    radioCtx.freqStart = tmpFreqS;
-  }else{
-    Serial.println(F("Invalid argument!"));
-  }
-}
-
-void cmdSetFreqEnd(){
-  char *arg;
-  arg = SCmd.next();
-  if (arg != NULL){
-    float tmpFreqE = atoi(arg);  
-    if(tmpFreqE < radioCtx.freqStart){
-      Serial.println(F("Selected frequency is invalid for this module!"));
-      return;
-    }
-    radioCtx.freqEnd = tmpFreqE;
-  }else{
-    Serial.println(F("Invalid argument!"));
-  }
-}
-
 void loop() {
   SCmd.readSerial();     // We don't do much, just process serial commands
   // perform scan over the entire frequency range
   radioCtx.freq = radioCtx.freqStart;
-  while((radioCtx.freq <= radioCtx.freqEnd) && running_scan) {
+  while((radioCtx.freq <= radioCtx.freqEnd) && runningScan) {
     // Serial.print("FREQ ");
     // Serial.println(freq, 2);
 
@@ -207,6 +181,68 @@ void loop() {
   digitalWrite(LED2, 0);
   digitalWrite(LED3, 0);
   
+}
+
+
+void cmdSetFreqStart(){
+  char *arg;
+  arg = SCmd.next();
+  if (arg != NULL){
+    float tmpFreqS = atoi(arg);  
+    if(tmpFreqS > radioCtx.freqEnd){
+      Serial.println(F("Selected frequency is invalid for this module!"));
+      return;
+    }
+    radioCtx.freqStart = tmpFreqS;
+  }else{
+    Serial.println(F("Invalid argument!"));
+  }
+}
+
+void cmdSetFreqEnd(){
+  char *arg;
+  arg = SCmd.next();
+  if (arg != NULL){
+    float tmpFreqE = atoi(arg);  
+    if(tmpFreqE < radioCtx.freqStart){
+      Serial.println(F("Selected frequency is invalid for this module!"));
+      return;
+    }
+    radioCtx.freqEnd = tmpFreqE;
+  }else{
+    Serial.println(F("Invalid argument!"));
+  }
+}
+
+void cmdStart(){
+  runningScan = true;
+}
+
+void cmdStop(){
+  runningScan = false;
+}
+
+void cmdGetState(){
+  Serial.print("State: ");
+  Serial.println(runningScan?"Running" : "Stopped");
+}
+
+void cmdGetConfiguration(){
+  Serial.println("Radio Configuration");
+  Serial.println("Frequency Start= " + String(radioCtx.freqStart) + " MHz");
+  Serial.println("Frequency End= " + String(radioCtx.freqEnd) + " MHz");
+  Serial.println("BiteRate = " + String(radioCtx.biteRate));
+  Serial.println("Freq Deviation = " + String(radioCtx.freqDeviation));
+  Serial.println("Bandwidth" + String(radioCtx.bandwidth));
+  Serial.println("Power = " + String(radioCtx.power));
+}
+
+void help(){
+  Serial.println("Available commands are:");
+  Serial.print("set_start_freq ");
+  Serial.println("Set the frequency start: Default " + String(FREQ_RANGE_START));
+  Serial.print("set_end_freq ");
+  Serial.println("Set the frequency end: Default " + String(FREQ_RANGE_END));
 }
 
 void unrecognized(const char *command) {
