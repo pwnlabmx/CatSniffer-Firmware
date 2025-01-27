@@ -49,7 +49,7 @@ void setup() {
 */
 while(!Serial);
 
-/*
+
       for (int i = 0; i < sizeof(sync_command); i++) {
     Serial1.write(firmware_v_command1[i]);
     Serial.write(firmware_v_command1[i]);
@@ -61,7 +61,7 @@ while(!Serial);
     Serial.write(firmware_v_command2[i]);
   }
 
-*/
+
 
 Serial1.print("ARhA\r\n");
 Serial.print("ARhA\r\n");

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define TEST;
+//#define TEST;
 
 catsniffer_t catsniffer;
 
@@ -16,7 +16,7 @@ int i=0;
 // Define advertisement data, hardcoded for now
 
 uint8_t advData[] = {
-  0x03, 0x01, 0x1A, 0x02, 0x0A, 0x0C, 0x11, 0x07,
+  0x02, 0x01, 0x1A, 0x02, 0x0A, 0x0C, 0x11, 0x07,
   0x64, 0x14, 0xEA, 0xD7, 0x2F, 0xDB, 0xA3, 0xB0,
   0x59, 0x48, 0x16, 0xD4, 0x30, 0x82, 0xCB, 0x27,
   0x05, 0x03, 0x0A, 0x18, 0x0D, 0x18
@@ -60,7 +60,9 @@ void setup(){
     catsniffer.baud=921600;
     catsniffer.mode=PASSTRHOUGH;  
     
-    Serial.begin(catsniffer.baud);
+    #ifdef TEST  
+      Serial.begin(catsniffer.baud);
+    #endif
     Serial1.begin(catsniffer.baud);
 
     while (!Serial) ;
@@ -86,7 +88,6 @@ void setup(){
     
     
     changeBand(&catsniffer, GIG);
-    
     
 #ifdef TEST
     Serial.println("Advertisement Data is:");
@@ -115,6 +116,8 @@ void setup(){
 #endif
     
     int8_t error = cmdAdvertise(advData, advDataLen, scanRspData, scanRspDataLen, 0); /////////////////////////////////////////////////////////////////// MODE ////////////////////////////////////////////////////////////////////////
+
+  #ifdef TEST
     //Error handling
     if (error == -1)
     {
@@ -128,6 +131,8 @@ void setup(){
     {
       Serial.println("Error: Mode must be 0 (connectable), 2 (non-connectable), or 3 (scannable)");
     } 
+  #endif
+  
     //Listen for response from the cc1352 
     listenForSerial1(1500);
     
@@ -367,21 +372,6 @@ unsigned long startTime = millis();
 while (millis() - startTime < duration) {
   if (Serial1.available()) {
     int incomingByte = Serial1.read(); //read serial and save it to a variable
-    //Serial.print("Byte original: ");
-    //Serial.println(incomingByte, HEX);
-    //char incomingByteArray[100];
-    //itoa(incomingByte, incomingByteArray, 10);
-
-  //Decode
-  /*
-    int incomingByteLen = sizeof(incomingByte); //
-    int incomingByteArrayDecodedLen = base64_dec_len(incomingByteArray, 100);
-    char incomingByteArrayDecoded[incomingByteArrayDecodedLen];
-    base64_decode(incomingByteArrayDecoded, incomingByteArray, 100);
-  */
-    //Print
-    //Serial.print("Byte decodificado: ");
-    //Serial.println(incomingByteArrayDecoded);  // Send it out to Serial (USB)
    }
   }
 }
