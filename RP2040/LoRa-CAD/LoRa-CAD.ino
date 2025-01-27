@@ -2,6 +2,7 @@
   CatSniffer - Use LoRa for communication with the SX1262 module
   
   Eduardo Contreras @ Electronic Cats
+  Kevin Leon @ Electronic Cats
   Original Creation Date: Jan 10, 2025
 
   This code is beerware; if you see me (or any other Electronic Cats
@@ -143,6 +144,7 @@ void loop() {
   SCmd.readSerial();
   // check if the flag is set
   if (scanFlag && runningScan) {
+    SCmd.readSerial();
     int state = RADIOLIB_ERR_NONE;
 
     // reset flag
@@ -241,7 +243,8 @@ void startRadioScanning(){
   int state = radio.startChannelScan();
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
-    runningScan = false;
+    runningScan = true;
+    resetScan();
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
@@ -368,24 +371,16 @@ void getConfiguration(){
 }
 
 void setScanningStart(){
-  char *arg;
-  arg = SCmd.next();
-  if(arg != NULL){
-    if(!runningScan){
-      startRadioScanning();
-    }
+  if(!runningScan){
+    startRadioScanning();
   }
 }
 
 void setScanningStop(){
-  char *arg;
-  arg = SCmd.next();
-  if(arg != NULL){
-    if(runningScan){
-      scanFlag = false;
-      runningScan = false;
-      receiving = false;
-    }
+  if(runningScan){
+    scanFlag = false;
+    runningScan = false;
+    receiving = false;
   }
 }
 
