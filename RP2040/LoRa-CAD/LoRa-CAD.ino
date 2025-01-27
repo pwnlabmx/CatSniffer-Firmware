@@ -372,19 +372,19 @@ void getScanning(){}
 
 void help(){
   Serial.println("Available commands are:");
-  Serial.print("set_freq");
+  Serial.print("set_freq ");
   Serial.println("Set the frequency in range of 150/960 MHz: Default 903.9");
-  Serial.print("set_sf");
+  Serial.print("set_sf ");
   Serial.println("Set the spread factor. Default: 7");
-  Serial.print("set_bw");
+  Serial.print("set_bw ");
   Serial.println("Set the bandwith value. Options: (7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500) kHz: Default 250");
-  Serial.print("set_cr");
+  Serial.print("set_cr ");
   Serial.println("Set the coding rate. Default: 5");
-  Serial.print("set_sw");
+  Serial.print("set_sw ");
   Serial.println("Set the sync Word: Default: 0x34");
-  Serial.print("set_pl");
+  Serial.print("set_pl ");
   Serial.println("Set the preamble length: Default: 10");
-  Serial.print("set_op");
+  Serial.print("set_op ");
   Serial.println("Set the output power. Default: 20");
   Serial.println("get_config Show the configuration of the radio");
 }
