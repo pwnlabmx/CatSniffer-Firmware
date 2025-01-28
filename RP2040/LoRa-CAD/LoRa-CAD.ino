@@ -95,8 +95,11 @@ void setup() {
   SCmd.addCommand("set_sw", cmdSetSyncWord);
   SCmd.addCommand("set_pl", cmdSetPreambleLength);
   SCmd.addCommand("set_op", cmdSetOutputPower);
-  SCmd.addCommand("start", cmdSetScanningStart);
-  SCmd.addCommand("stop", cmdSetScanningStop);
+  SCmd.addCommand("start_fixed", cmdSetScanningStart);
+  SCmd.addCommand("stop_fixed", cmdSetScanningStop);
+  // TODO: Fix the frequency when stop
+  SCmd.addCommand("start_hop", cmdStartChannelHopp);
+  SCmd.addCommand("stop_hop", cmdStopChannelHopp);
   
   SCmd.addCommand("get_config", cmdGetConfiguration);
   SCmd.addCommand("get_state", cmdGetScanning);
@@ -113,7 +116,7 @@ void setup() {
   radioCtx.outputPower = 20;
   radioCtx.preambleLength = 10;
 
-  startFreq = radioCtx.frequency;
+  startFreq = 433;
   
   Serial.print(F("[SX1262] Initializing ... "));
   int state = radio.begin(radioCtx.frequency, radioCtx.bandWidth, radioCtx.spreadFactor, radioCtx.codingRate, radioCtx.syncWord, radioCtx.outputPower, radioCtx.preambleLength, 0, false);
@@ -140,15 +143,16 @@ void resetScan(){
     Serial.print(F("[SX1262] Starting scan for LoRa preamble ... "));
     #endif
 
-    radioCtx.frequency+=0.1;
-    // if(hoppChannel){
-    if(radioCtx.frequency > endFreq){
-      Serial.println("Reset");
-      radioCtx.frequency = startFreq;
+    if(hoppChannel){
+      radioCtx.frequency+=0.1;
+    
+      if(radioCtx.frequency > endFreq){
+        radioCtx.frequency = startFreq;
+      }
+      handleErrorCodePrint(radio.setFrequency(radioCtx.frequency));
+    }else{
+      handleErrorCodePrint(radio.setFrequency(startFreq));
     }
-    handleErrorCodePrint(radio.setFrequency(radioCtx.frequency));
-    // }
-    // handleErrorCodePrint(radio.setFrequency(radioCtx.frequency+=1));
     
     int state = radio.startChannelScan();
     handleErrorCodePrint(state);
@@ -391,7 +395,25 @@ void cmdSetScanningStop(){
 void cmdGetScanning(){
   Serial.print("State:" );
   Serial.println(runningScan?"Running" : "Stopped");
+  Serial.println(hoppChannel?"Channel Range" : "Fixed");
 }
+
+void cmdStopChannelHopp(){
+   if(hoppChannel){
+    hoppChannel = false;
+    handleErrorCodePrint(radio.setFrequency(startFreq));
+    startRadioScanning();
+  }
+}
+
+void cmdStartChannelHopp(){
+   if(!hoppChannel){
+    hoppChannel = true;
+    handleErrorCodePrint(radio.setFrequency(startFreq));
+    startRadioScanning();
+  }
+}
+
 
 void help(){
   Serial.println("Available commands are:");
