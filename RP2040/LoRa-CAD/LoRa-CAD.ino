@@ -240,7 +240,7 @@ void cmdSetPreambleLength(){
   arg = SCmd.next();
   if(arg != NULL){
     int tmp_value = atoi(arg);
-    if(radio.cmdSetPreambleLength(tmp_value) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH){
+    if(radio.setPreambleLength(tmp_value) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH){
       Serial.println(F("Selected preamble length is invalid for this module!"));
       return;
     }
@@ -258,7 +258,7 @@ void cmdSetSyncWord(){
       syncWord = 0;
       syncWord = nibble(*(arg)) << 4;
       syncWord = syncWord | nibble(*(arg + 1));
-      if (radio.cmdSetSyncWord(syncWord) != RADIOLIB_ERR_NONE) {
+      if (radio.setSyncWord(syncWord) != RADIOLIB_ERR_NONE) {
         Serial.println(F("Unable to set sync word!"));
         return;
       }
@@ -277,7 +277,7 @@ void cmdSetOutputPower(){
   arg = SCmd.next();
   if(arg != NULL){
     int tmp_value = atoi(arg);
-    if(radio.cmdSetOutputPower(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
+    if(radio.setOutputPower(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
       Serial.println(F("Selected output power is invalid for this module!"));
       return;
     }
@@ -291,7 +291,7 @@ void cmdSetCodingRate(){
   arg = SCmd.next();
   if(arg != NULL){
     int tmp_value = atoi(arg);
-    if(radio.setSpreadingFactor(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
+    if(radio.setCodingRate(tmp_value) == RADIOLIB_ERR_INVALID_CODING_RATE){
       Serial.println(F("Selected coding rate is invalid for this module!"));
       return;
     }
@@ -333,7 +333,7 @@ void cmdSetFrequency(){
   arg = SCmd.next();
   if(arg != NULL){
     float tmp_value = atoi(arg);
-    if(radio.cmdSetFrequency(tmp_value) == RADIOLIB_ERR_INVALID_FREQUENCY){
+    if(radio.setFrequency(tmp_value) == RADIOLIB_ERR_INVALID_FREQUENCY){
       Serial.println(F("Selected frequency is invalid for this module!"));
       return;
     }
