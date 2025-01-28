@@ -56,6 +56,10 @@ bool recivedPacket = false;
 const unsigned long interval = 5000;    // 5 s interval to send message
 unsigned long previousMillis = 0;  // will store last time message sent
 
+bool hoppChannel = true;
+float startFreq = 150;
+float endFreq = 960;
+
 // flag to indicate that a packet was detected or CAD timed out
 volatile bool scanFlag = false;
 
@@ -101,13 +105,15 @@ void setup() {
 
   SCmd.setDefaultHandler(unrecognized);
   // initialize SX1262 with default settings
-  radioCtx.frequency = 903.9;
+  radioCtx.frequency = 433;//903.9;
   radioCtx.bandWidth = 250;
   radioCtx.spreadFactor = 7;
   radioCtx.codingRate = 5;
   radioCtx.syncWord = 0x34;
   radioCtx.outputPower = 20;
   radioCtx.preambleLength = 10;
+
+  startFreq = radioCtx.frequency;
   
   Serial.print(F("[SX1262] Initializing ... "));
   int state = radio.begin(radioCtx.frequency, radioCtx.bandWidth, radioCtx.spreadFactor, radioCtx.codingRate, radioCtx.syncWord, radioCtx.outputPower, radioCtx.preambleLength, 0, false);
@@ -125,7 +131,6 @@ void setup() {
   // set the function that will be called
   // when LoRa packet or timeout is detected
   radio.setDio1Action(setFlag);
-
   startRadioScanning();
 }
 
@@ -134,6 +139,17 @@ void resetScan(){
     #ifdef VERBOSE
     Serial.print(F("[SX1262] Starting scan for LoRa preamble ... "));
     #endif
+
+    radioCtx.frequency+=0.1;
+    // if(hoppChannel){
+    if(radioCtx.frequency > endFreq){
+      Serial.println("Reset");
+      radioCtx.frequency = startFreq;
+    }
+    handleErrorCodePrint(radio.setFrequency(radioCtx.frequency));
+    // }
+    // handleErrorCodePrint(radio.setFrequency(radioCtx.frequency+=1));
+    
     int state = radio.startChannelScan();
     handleErrorCodePrint(state);
   }
@@ -165,6 +181,9 @@ void loop() {
         // print data of the packet
         Serial.print(F("[SX1262] Data:\t\t"));
         Serial.println(str);
+
+        Serial.print(F("[SX1262] Freq:\t\t"));
+        Serial.println(radioCtx.frequency, 2);
 
         // print RSSI (Received Signal Strength Indicator)
         Serial.print(F("[SX1262] RSSI:\t\t"));
@@ -337,9 +356,6 @@ void cmdSetFrequency(){
       Serial.println(F("Selected frequency is invalid for this module!"));
       return;
     }
-    Serial.print("Frequency set to ");
-    Serial.print(tmp_value, 2);
-    Serial.println(" MHz");
     radioCtx.frequency = tmp_value;
   }
 }
@@ -413,6 +429,9 @@ void handleErrorCodePrint(int16_t state){
     #ifdef VERBOSE
     Serial.println(F("[SX1262] Channel is free!"));
     #endif
+    break;
+  case RADIOLIB_ERR_CRC_MISMATCH:
+    Serial.println(F("SX1262] CRC Failed"));
     break;
   default:
     Serial.print(F("failed, code "));
