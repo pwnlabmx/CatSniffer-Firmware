@@ -1,3 +1,10 @@
+/*
+This code will generate a BLE advertisement from the CatSniffer with de defined package and device name.
+This code is meant to be used with Electronic Cats' CatSniffer board running the Sniffle firmware on the CC1352P7 MCU.
+The latest Sniffle firmware can be obtained and uploaded to the board using the Catnip tool found in: https://github.com/ElectronicCats/CatSniffer-Tools/tree/main/catnip_uploader
+Upload this code to the RP2040 MCU.
+*/
+
 #include "Base64.h"
 #include "SerialPassthroughwithboot.h"
 #include <stdio.h>
@@ -6,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//#define TEST;
+//#define TEST; //Uncomment for testing purposes, needs serial monitor open
 
 catsniffer_t catsniffer;
 
@@ -30,7 +37,7 @@ int8_t cmdAdvertise(uint8_t * advData, uint8_t advDataLen, uint8_t * scanRspData
 void cmdSend(int mode, uint8_t* paddedAdvData, uint8_t* paddedScanRspData);
 
 void setup(){   
-    //Set
+    //Set catsniffer parameters
     catsniffer.led_interval=1000;
     catsniffer.baud=921600;
     catsniffer.mode=PASSTRHOUGH;  
@@ -64,6 +71,7 @@ void setup(){
       pinMode(i,INPUT);
     }
 
+    //Blink LEDS to indicate band change
     digitalWrite(LED3,  HIGH);
     delay(1000);
     digitalWrite(LED3,  LOW);
@@ -226,8 +234,8 @@ int8_t cmdAdvertise(uint8_t * advData, uint8_t advDataLen, uint8_t * scanRspData
     Serial.print("\n");
 #endif
 
-
-    cmdSend(mode,paddedAdvData,paddedScanRspData);
+    //Call the send function
+    cmdSend(mode,paddedAdvData,paddedScanRspData); 
 
     return 0;
 }
