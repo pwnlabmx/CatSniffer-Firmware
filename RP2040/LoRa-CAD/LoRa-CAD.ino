@@ -318,7 +318,7 @@ void cmdSetBandWidth(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
-    float tmp_value = atoi(arg);
+    float tmp_value = atof(arg);
     if(radio.setBandwidth(tmp_value) == RADIOLIB_ERR_INVALID_BANDWIDTH){
       Serial.println(F("Selected bandwidth is invalid for this module!"));
       return;
@@ -332,19 +332,23 @@ void cmdSetFrequency(){
   char *arg;
   arg = SCmd.next();
   if(arg != NULL){
-    float tmp_value = atoi(arg);
+    float tmp_value = atof(arg);
     if(radio.setFrequency(tmp_value) == RADIOLIB_ERR_INVALID_FREQUENCY){
       Serial.println(F("Selected frequency is invalid for this module!"));
       return;
     }
-    Serial.println("Frequency set to " + String(tmp_value) + " MHz");
+    Serial.print("Frequency set to ");
+    Serial.print(tmp_value, 2);
+    Serial.println(" MHz");
     radioCtx.frequency = tmp_value;
   }
 }
 
 void cmdGetConfiguration(){
   Serial.println("Radio Configuration");
-  Serial.println("Frequency = " + String(radioCtx.frequency) + " MHz");
+  Serial.print("Frequency = ");
+  Serial.print(radioCtx.frequency, 2);
+  Serial.println(" MHz");
   Serial.println("Bandwidth = " + String(radioCtx.bandWidth));
   Serial.println("Spreading Factor = " + String(radioCtx.spreadFactor));
   Serial.println("Coding Rate = 4/" + String(radioCtx.codingRate));
