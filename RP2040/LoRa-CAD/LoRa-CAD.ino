@@ -453,7 +453,7 @@ void handleErrorCodePrint(int16_t state){
     #endif
     break;
   case RADIOLIB_ERR_CRC_MISMATCH:
-    Serial.println(F("SX1262] CRC Failed"));
+    Serial.println(F("[SX1262] CRC Failed"));
     break;
   default:
     Serial.print(F("failed, code "));
