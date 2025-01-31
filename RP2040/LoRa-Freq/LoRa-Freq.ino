@@ -131,8 +131,8 @@ void loop() {
   // perform scan over the entire frequency range
   radioCtx.freq = radioCtx.freqStart;
   while((radioCtx.freq <= radioCtx.freqEnd) && runningScan) {
-    // Serial.print("FREQ ");
-    // Serial.println(freq, 2);
+    Serial.print("FREQ ");
+    Serial.println(radioCtx.freq, 2);
 
     // start spectral scan
     // number of samples: 2048 (fewer samples = better temporal resolution)
@@ -158,14 +158,12 @@ void loop() {
       digitalWrite(LED1, 1);
       digitalWrite(LED2, 1);
       digitalWrite(LED3, 1);
-      Serial.print("@S");
-      Serial.print(radioCtx.freq, 2);
-      Serial.print(";");
+      Serial.print("SCAN ");
       for(uint8_t i = 0; i < RADIOLIB_SX126X_SPECTRAL_SCAN_RES_SIZE; i++) {
         Serial.print(results[i]);
         Serial.print(',');
       }
-      Serial.println("@E");
+      Serial.println(" END");
     }
 
     // wait a little bit before the next scan
