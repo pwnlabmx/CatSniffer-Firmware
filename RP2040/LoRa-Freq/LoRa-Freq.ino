@@ -21,8 +21,8 @@
 #define CTF2 9
 #define CTF3 10
 
-#define FREQ_RANGE_START 860
-#define FREQ_RANGE_END 928
+#define FREQ_RANGE_START 150
+#define FREQ_RANGE_END 960
 #define SAMPLE_RATE 2048
 
 #define LED1 (27)
