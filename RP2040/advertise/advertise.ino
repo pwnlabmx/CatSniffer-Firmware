@@ -78,6 +78,21 @@ void setup(){
 
     changeBand(&catsniffer, GIG);
 
+  
+  //Hardcode initial configurations until the cmdSend functions is upgraded
+  Serial1.write("ARhA\r\n",6); //cmd_marker 
+  Serial1.write("BBAl1r6JjgBVVVUA\r\n",18); // cmd_chan_aa_phy
+  Serial1.write("AREB\r\n",6); //cmd_pause_done
+  Serial1.write("ARUB\r\n",6); //cmd_follow
+  Serial1.write("ARKA\r\n",6); //cmd_rssi
+  Serial1.write("ARM=\r\n",6); //cmd_mac
+  Serial1.write("ARYA\r\n",6); //cmd_auxadv
+  Serial1.write("AxsBmHIN9rT8\r\n",14); //cmd_setaddr
+  Serial1.write("Ah3IAA==\r\n",10); //cmd_adv_interval
+  Serial1.write("AScF\r\n",6); //cmd_tx_power
+  Serial1.write("ASE=\r\n",6); //cmd_interval_preload
+  Serial1.write("Ahg4W6bf\r\n",10); //cmd_marker
+  
 
   uint8_t advDataLen = sizeof(advData) / sizeof(advData[0]);
 
