@@ -192,6 +192,7 @@ void cmdSetFreqStart(){
       return;
     }
     radioCtx.freqStart = tmpFreqS;
+    Serial.println("Frequency set to " + String(tmpFreqS) + " MHz");
   }else{
     Serial.println(F("Invalid argument!"));
   }
@@ -207,6 +208,7 @@ void cmdSetFreqEnd(){
       return;
     }
     radioCtx.freqEnd = tmpFreqE;
+    Serial.println("Frequency set to " + String(tmpFreqE) + " MHz");
   }else{
     Serial.println(F("Invalid argument!"));
   }

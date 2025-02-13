@@ -78,6 +78,36 @@ Set frequency interval open a serial terminal with `921600` of baudrate and set 
 set_start_freq 433
 set_end_freq 500
 ```
+### liveSpectrumScan.py
+
+```bash
+usage: liveSpectrumScan.py [-h] [-b BAUDRATE] [--freqStart FREQSTART] [--freqEnd FREQEND] [--offset OFFSET] port
+
+        RadioLib SX126x_Spectrum_Scan plotter script. Displays output from SX126x_Spectrum_Scan example
+        as grayscale and
+
+        Depends on pyserial and matplotlib, install by:
+        'python3 -m pip install pyserial matplotlib'
+
+        Step-by-step guide on how to use the script:
+        1. Upload the SX126x_Spectrum_Scan example to your Arduino board with SX1262 connected.
+        2. Run the script with appropriate arguments.
+        3. Once the scan is complete, output files will be saved to out/
+
+
+positional arguments:
+  port                  COM port to connect to the device
+
+options:
+  -h, --help            show this help message and exit
+  -b, --baudrate BAUDRATE
+                        COM port baudrate (defaults to 115200)
+  --freqStart FREQSTART
+                        Starting frequency in MHz (Default to 860)
+  --freqEnd FREQEND     End frequency in MHz (Default to 928)
+  --offset OFFSET       Default RSSI offset in dBm (defaults to -11)
+```
+
 Then execute the python script `liveSpectrumScan.py` using the range `python3 liveSpectrumScan.py SERIAL_PORT --freqStart 433 --freqEnd 500`.
 
 ![Script running](docs/liveSpectrumScan.png)

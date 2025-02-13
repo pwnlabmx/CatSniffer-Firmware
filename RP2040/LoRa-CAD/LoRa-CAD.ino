@@ -361,6 +361,7 @@ void cmdSetFrequency(){
       return;
     }
     radioCtx.frequency = tmp_value;
+    Serial.println("Frequency set to " + String(tmp_value) + " MHz");
   }
 }
 
