@@ -61,6 +61,8 @@ Once you have the libraries, you can run the script.
 
 > By default the firmware and script run in the frequency range of 150 MHz to 960 MHz.
 
+> **This firmware version had a blocking serial, yo need to use in a single serial communication** The LED'S will turn on once you connect, if you disconnect and LED's still on, you need to reset the RP2040 using the physical button.
+
 Available commands
 ```bash 
 # Available commands are: 
